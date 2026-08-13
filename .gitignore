@@ -5,5 +5,7 @@ dist
 !.env.example
 *.db
 *.db-journal
+apps/api/data/*.json
 coverage
+*.tsbuildinfo
 .DS_Store

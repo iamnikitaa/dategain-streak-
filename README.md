@@ -6,15 +6,12 @@ DateGain Streak is a tiny daily guessing game themed around dating openers. Each
 
 - React, Vite, and TypeScript for the frontend
 - Node.js, Express, and TypeScript for the backend
-- Prisma for persistence
-- SQLite locally, with a straightforward path to Postgres on Supabase or Neon for deployment
+- File-backed JSON persistence for players and guesses
 
 ## Local Setup
 
 ```bash
 npm install
-npm run prisma:generate
-npm run prisma:migrate
 npm run dev
 ```
 
@@ -25,9 +22,9 @@ The frontend runs at `http://localhost:5173` and the API runs at `http://localho
 Copy `apps/api/.env.example` to `apps/api/.env`.
 
 ```bash
-DATABASE_URL="file:./dev.db"
 PORT=4000
 CORS_ORIGIN="http://localhost:5173"
+DATA_FILE="./data/streak-store.json"
 ```
 
 For the web app, copy `apps/web/.env.example` to `apps/web/.env`.

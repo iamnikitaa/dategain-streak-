@@ -2,7 +2,6 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { z } from "zod";
-import { prisma } from "./db.js";
 import {
   getPreviousDateKey,
   getPuzzleForDate,
@@ -10,6 +9,14 @@ import {
   GUESS_TOLERANCE,
   isGuessCorrect
 } from "./puzzles.js";
+import {
+  createGuess,
+  findGuessForDate,
+  findPlayerById,
+  updatePlayerStreak,
+  upsertPlayer,
+  withStore
+} from "./store.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -28,17 +35,19 @@ const guessSchema = z.object({
 });
 
 async function refreshStaleStreak(playerId: string, lastPlayedDate: string | null) {
-  const today = getTodayDateKey();
-  const yesterday = getPreviousDateKey(today);
+  return withStore((data) => {
+    const player = findPlayerById(data, playerId);
+    if (!player) return null;
 
-  if (lastPlayedDate && lastPlayedDate !== today && lastPlayedDate !== yesterday) {
-    return prisma.player.update({
-      where: { id: playerId },
-      data: { currentStreak: 0 }
-    });
-  }
+    const today = getTodayDateKey();
+    const yesterday = getPreviousDateKey(today);
 
-  return prisma.player.findUniqueOrThrow({ where: { id: playerId } });
+    if (lastPlayedDate && lastPlayedDate !== today && lastPlayedDate !== yesterday) {
+      return updatePlayerStreak(player, 0);
+    }
+
+    return player;
+  });
 }
 
 app.get("/api/health", (_request, response) => {
@@ -49,14 +58,13 @@ app.post("/api/players", async (request, response, next) => {
   try {
     const payload = playerSchema.parse(request.body);
     const username = payload.username.toLowerCase();
-
-    const player = await prisma.player.upsert({
-      where: { username },
-      update: {},
-      create: { username }
-    });
-
+    const player = await withStore((data) => upsertPlayer(data, username));
     const currentPlayer = await refreshStaleStreak(player.id, player.lastPlayedDate);
+
+    if (!currentPlayer) {
+      response.status(404).json({ message: "Player not found." });
+      return;
+    }
 
     response.json({
       playerId: currentPlayer.id,
@@ -71,7 +79,7 @@ app.post("/api/players", async (request, response, next) => {
 app.get("/api/today", async (request, response, next) => {
   try {
     const playerId = z.string().min(1).parse(request.query.playerId);
-    const player = await prisma.player.findUnique({ where: { id: playerId } });
+    const player = await withStore((data) => findPlayerById(data, playerId));
 
     if (!player) {
       response.status(404).json({ message: "Player not found." });
@@ -79,11 +87,14 @@ app.get("/api/today", async (request, response, next) => {
     }
 
     const currentPlayer = await refreshStaleStreak(player.id, player.lastPlayedDate);
+    if (!currentPlayer) {
+      response.status(404).json({ message: "Player not found." });
+      return;
+    }
+
     const date = getTodayDateKey();
     const puzzle = getPuzzleForDate(date);
-    const existingGuess = await prisma.guess.findUnique({
-      where: { playerId_date: { playerId, date } }
-    });
+    const existingGuess = await withStore((data) => findGuessForDate(data, playerId, date));
 
     response.json({
       date,
@@ -112,15 +123,13 @@ app.post("/api/guess", async (request, response, next) => {
     const yesterday = getPreviousDateKey(today);
     const puzzle = getPuzzleForDate(today);
 
-    const player = await prisma.player.findUnique({ where: { id: payload.playerId } });
+    const player = await withStore((data) => findPlayerById(data, payload.playerId));
     if (!player) {
       response.status(404).json({ message: "Player not found." });
       return;
     }
 
-    const existingGuess = await prisma.guess.findUnique({
-      where: { playerId_date: { playerId: payload.playerId, date: today } }
-    });
+    const existingGuess = await withStore((data) => findGuessForDate(data, payload.playerId, today));
 
     if (existingGuess) {
       response.status(409).json({
@@ -137,25 +146,26 @@ app.post("/api/guess", async (request, response, next) => {
     const continuedYesterday = player.lastPlayedDate === yesterday;
     const nextStreak = correct ? (continuedYesterday ? player.currentStreak + 1 : 1) : 0;
 
-    const [, updatedPlayer] = await prisma.$transaction([
-      prisma.guess.create({
-        data: {
-          playerId: payload.playerId,
-          date: today,
-          puzzleId: puzzle.id,
-          guess: payload.guess,
-          actualSwipeRate: puzzle.swipeRate,
-          correct
-        }
-      }),
-      prisma.player.update({
-        where: { id: payload.playerId },
-        data: {
-          currentStreak: nextStreak,
-          lastPlayedDate: today
-        }
-      })
-    ]);
+    const updatedPlayer = await withStore((data) => {
+      const currentPlayer = findPlayerById(data, payload.playerId);
+      if (!currentPlayer) return null;
+
+      createGuess(data, {
+        playerId: payload.playerId,
+        date: today,
+        puzzleId: puzzle.id,
+        guess: payload.guess,
+        actualSwipeRate: puzzle.swipeRate,
+        correct
+      });
+
+      return updatePlayerStreak(currentPlayer, nextStreak, today);
+    });
+
+    if (!updatedPlayer) {
+      response.status(404).json({ message: "Player not found." });
+      return;
+    }
 
     response.json({
       correct,

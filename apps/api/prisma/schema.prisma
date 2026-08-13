@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  currentStreak Int      @default(0)
+  lastPlayedDate String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  guesses       Guess[]
+}
+
+model Guess {
+  id              String   @id @default(cuid())
+  playerId        String
+  date            String
+  puzzleId        String
+  guess           Int
+  actualSwipeRate Int
+  correct         Boolean
+  createdAt       DateTime @default(now())
+  player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, date])
+  @@index([date])
+}

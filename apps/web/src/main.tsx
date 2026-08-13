@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Flame, Heart, Lock, Send, Sparkles, UserRound } from "lucide-react";
+import { Flame, Heart, Lock, Send, Sparkles, UserRound, Wand2 } from "lucide-react";
 import "./styles.css";
 
 type Player = {
@@ -37,6 +37,14 @@ type GuessResult = {
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 const STORAGE_KEY = "dategain-streak-player";
 
+const themes = [
+  { id: "soft-launch", label: "Soft launch" },
+  { id: "main-character", label: "Main character" },
+  { id: "after-hours", label: "After hours" }
+] as const;
+
+type ThemeId = (typeof themes)[number]["id"];
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -63,6 +71,7 @@ function App() {
   const [result, setResult] = React.useState<GuessResult | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [theme, setTheme] = React.useState<ThemeId>("soft-launch");
 
   React.useEffect(() => {
     if (!player) return;
@@ -151,21 +160,35 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell theme-${theme}`}>
       <section className="game-panel">
         <div className="brand-row">
           <div className="brand-mark">
             <Heart aria-hidden="true" size={22} />
           </div>
           <div>
-            <p className="eyebrow">DateGain Streak</p>
-            <h1>Forecast today's opener.</h1>
+            <p className="eyebrow">DateGain daily drop</p>
+            <h1>Is this opener a swipe magnet?</h1>
           </div>
+        </div>
+
+        <div className="theme-switcher" aria-label="Visual theme">
+          {themes.map((item) => (
+            <button
+              className={theme === item.id ? "theme-chip active" : "theme-chip"}
+              key={item.id}
+              onClick={() => setTheme(item.id)}
+              type="button"
+            >
+              <Wand2 aria-hidden="true" size={15} />
+              {item.label}
+            </button>
+          ))}
         </div>
 
         {!player ? (
           <form className="entry-form" onSubmit={handlePlayerSubmit}>
-            <label htmlFor="username">Choose a player name</label>
+            <label htmlFor="username">Drop your handle</label>
             <div className="input-row">
               <UserRound aria-hidden="true" size={19} />
               <input
@@ -181,9 +204,9 @@ function App() {
             </div>
             <button disabled={loading} type="submit">
               <Send aria-hidden="true" size={18} />
-              Start playing
+              Enter the lobby
             </button>
-            <p className="helper">Letters, numbers, underscores, and hyphens only.</p>
+            <p className="helper">No login needed. Your handle just saves the streak on this API.</p>
           </form>
         ) : (
           <div className="game-stack">
@@ -210,7 +233,7 @@ function App() {
               <ResultCard result={result} />
             ) : (
               <form className="guess-form" onSubmit={handleGuessSubmit}>
-                <label htmlFor="guess">How many out of 100 would swipe right?</label>
+                <label htmlFor="guess">Out of 100, how many are swiping right?</label>
                 <div className="guess-row">
                   <input
                     id="guess"
@@ -227,19 +250,19 @@ function App() {
                     Submit
                   </button>
                 </div>
-                <p className="helper">One guess per day. Within {today?.tolerance ?? 5} points counts.</p>
+                <p className="helper">One shot per day. Land within {today?.tolerance ?? 5} points to keep the streak alive.</p>
               </form>
             )}
 
             {today?.alreadyGuessed ? (
               <div className="locked-note">
                 <Lock aria-hidden="true" size={17} />
-                Today's guess is locked. Come back tomorrow for a new opener.
+                Today's drop is locked. Come back tomorrow for a fresh opener.
               </div>
             ) : null}
 
             <button className="text-button" type="button" onClick={resetPlayer}>
-              Switch player
+              Switch handle
             </button>
           </div>
         )}
@@ -257,7 +280,7 @@ function ResultCard({ result }: { result: GuessResult }) {
         <Sparkles aria-hidden="true" size={20} />
       </div>
       <div>
-        <span className="label">{result.correct ? "Nice read" : "Missed it"}</span>
+        <span className="label">{result.correct ? "You read the room" : "The room said no"}</span>
         <h2>{result.message}</h2>
         <p>
           You guessed {result.guess}. The opener's swipe rate was {result.actualSwipeRate}. Your streak is now{" "}

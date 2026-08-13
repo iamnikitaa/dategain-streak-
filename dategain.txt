@@ -1,0 +1,35 @@
+# Build Something Real
+
+<aside>
+💎
+
+## The Task: build "Streak" — a tiny daily guessing game.
+
+</aside>
+
+One puzzle a day. A player gets one guess. If they're right, their streak goes up. If they're wrong or they miss a day, it resets. That's the whole game — the depth is in how well you build it, not how many features it has.
+
+---
+
+### What you need to build:
+
+- **A frontend** — a single clean page where a player can see today's puzzle, enter a guess, and see the result. Pick any puzzle type you want: a mystery word, a number in a range, a yes/no riddle, whatever you can build well in the time you have. Simplicity is fine. Polish is noticed.
+- **A backend** — a real API that the frontend talks to. The guess must be checked on the server, not just in the browser. The backend should also track and store each player's current streak, so it's still there if they close the tab and come back tomorrow.
+- **Persistence** — store player data somewhere that survives a restart (a database, a hosted key-value store, even a simple file-backed store — your choice, whatever you're comfortable shipping fast and correctly).
+- **A way to identify a player** — no real authentication needed. A simple username or device ID is enough.
+
+---
+
+### Important:
+
+- Time budget: roughly 6–8 hours of actual work, spread across 2–3 days. We're not expecting a polished product — we're expecting a real, working one.
+- Free tools and free-tier hosting only (Vercel, Render, Railway, Supabase free tier, etc. — whatever you're comfortable with).
+- AI tools are fully allowed and encouraged — Claude Code, Codex, Cursor, Copilot, whatever you use day to day. Build this the way you'd actually build something at a job.
+
+---
+
+### Submission — please follow this exactly, since this is how we review it:
+
+- **A GitHub repo link.** Make it public, Please commit as you go rather than uploading everything in one final commit — it doesn't need to be tidy, we just want to see the real build process.
+- **A live deployed link** where we can actually play it.
+- **A short screen recording (Loom or anything, under 5 minutes, unlisted link is fine)** — walk us through what you built and why you made the choices you made. Doesn't need to be scripted or polished, just talk us through it like you're explaining it to a teammate. Language (English or Hindi, whatever you’re more comfortable with)

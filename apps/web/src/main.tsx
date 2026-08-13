@@ -38,9 +38,9 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 const STORAGE_KEY = "dategain-streak-player";
 
 const themes = [
-  { id: "soft-launch", label: "Soft launch" },
-  { id: "main-character", label: "Main character" },
-  { id: "after-hours", label: "After hours" }
+  { id: "soft-launch", label: "Light" },
+  { id: "main-character", label: "Pop" },
+  { id: "after-hours", label: "Night" }
 ] as const;
 
 type ThemeId = (typeof themes)[number]["id"];
@@ -167,8 +167,8 @@ function App() {
             <Heart aria-hidden="true" size={22} />
           </div>
           <div>
-            <p className="eyebrow">DateGain daily drop</p>
-            <h1>Is this opener a swipe magnet?</h1>
+            <p className="eyebrow">Keep up with your guess</p>
+            <h1>DateGain Streak</h1>
           </div>
         </div>
 

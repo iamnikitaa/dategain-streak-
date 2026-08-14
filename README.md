@@ -122,6 +122,12 @@ CORS_ORIGIN="https://your-vercel-url.vercel.app"
 DATA_FILE="./data/streak-store.json"
 ```
 
+You can also provide multiple origins separated by commas:
+
+```bash
+CORS_ORIGIN="http://localhost:5173,https://your-vercel-url.vercel.app"
+```
+
 ### Vercel Frontend
 
 Use these settings:

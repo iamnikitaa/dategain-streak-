@@ -20,9 +20,28 @@ import {
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
-const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use(cors({ origin: corsOrigin }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      if (origin.endsWith(".vercel.app")) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS.`));
+    }
+  })
+);
 app.use(express.json());
 
 const playerSchema = z.object({

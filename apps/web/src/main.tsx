@@ -168,7 +168,7 @@ function App() {
           </div>
           <div>
             <p className="eyebrow">Keep up with your guess</p>
-            <h1>DateGain Streak</h1>
+            <h1>Dategain Streak</h1>
           </div>
         </div>
 

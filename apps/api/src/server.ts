@@ -193,5 +193,5 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
 });
 
 app.listen(port, () => {
-  console.log(`DateGain Streak API running on http://localhost:${port}`);
+  console.log(`Dategain Streak API running on http://localhost:${port}`);
 });

@@ -6,7 +6,7 @@ Dategain Streak is a tiny daily guessing game themed around dating openers. Each
 
 - GitHub: https://github.com/iamnikitaa/dategain-streak-
 - Frontend: https://dategain-streak-web.vercel.app/
-- API health check:  `https://dategain-streak.onrender.com//api/health`
+- API health check:  https://dategain-streak.onrender.com//api/health
 
 ## How It Works
 
